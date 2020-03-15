@@ -3,6 +3,7 @@ from os import path
 from os import chdir
 from os import getcwd
 import pickle
+import threading
 
 
 class Database():
@@ -26,6 +27,10 @@ class Database():
             if path.exists('database.database'):
                 with open('database.database', 'rb') as f:
                     self.tables = pickle.load(f)
+
+                    for i in range(0, len(self.tables)):
+                        self.tables[i].lock = threading.Lock()
+                    
             else:
                 pass
         else:
@@ -43,6 +48,7 @@ class Database():
 
     def close(self):
         for i in range(0, len(self.tables)):
+            self.tables[i].lock = None
             self.tables[i].close()
 
         with open('database.database', 'wb') as f:

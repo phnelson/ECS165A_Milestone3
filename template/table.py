@@ -7,6 +7,7 @@ from queue import Queue
 from time import time
 # import thread
 import sys
+import threading
 
 
 class Record:
@@ -43,7 +44,8 @@ class Table:
         # self.page_ranges.append(PageRange(self.num_columns))
         self.curr_page_range = 0
         self.insertRecord([0] * num_columns)
-        # self.merge_queue = Queue()
+        #self.merge_queue = Queue()
+        self.lock = threading.Lock()
 
     def __str__(self):
             return self.name
@@ -90,6 +92,7 @@ class Table:
 
         self.buffer_pool_range.submitMerge(pageR, new_copy, tail_blocks)
 
+    '''
     def enqueueMerge(self, pageR):
         self.merge_queue.enqueue
 
@@ -101,6 +104,7 @@ class Table:
             next = self.merge_queue.get()
             self.__merge(next)
             pass
+    '''
 
     def createIndex(self, column_num):
         self.index.create_index(column_num)
