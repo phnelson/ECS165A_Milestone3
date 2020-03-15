@@ -47,8 +47,131 @@ class Table:
         #self.merge_queue = Queue()
         self.lock = threading.Lock()
 
+        self.lock_manager_rids = {}
+        self.lock_manager_pageRanges = {}
+
     def __str__(self):
             return self.name
+
+    def lockReadRid(self, rid):
+        self.lock.acquire()
+
+        val = self.lock_manager_rids.get(rid)
+
+        if val is None:
+            self.lock_manager_rids(rid) = 0
+            val = 0
+        else:
+
+        if val >= 0:
+            self.lock_manager_rids(rid) = val + 1
+            retval = True
+        else:
+            retval = False
+
+        self.lock.release()
+
+        return retval
+
+    def unlockReadRid(self, rid):
+        self.lock.acquire()
+
+        val = self.lock_manager_rids.get(rid)
+
+        if val is None:
+            self.lock_manager_rids(rid) = 0
+            val = 0
+        else:
+
+        if val > 0:
+            self.lock_manager_rids(rid) = val - 1
+            retval = True
+        else:
+            retval = False
+
+        self.lock.release()
+        
+        return retval
+
+    def lockWriteRid(self, rid):
+        self.lock.acquire()
+
+        val = self.lock_manager_rids.get(rid)
+
+        if val is None:
+            self.lock_manager_rids(rid) = 0
+            val = 0
+        else:
+
+        if val = 0:
+            self.lock_manager_rids(rid) = val - 1
+            retval = True
+        else:
+            retval = False
+
+        self.lock.release()
+        
+        return retval
+
+    def unlockWriteRid(self, rid):
+        self.lock.acquire()
+
+        val = self.lock_manager_rids.get(rid)
+
+        if val is None:
+            self.lock_manager_rids(rid) = 0
+            val = 0
+        else:
+
+        if val == -1:
+            self.lock_manager_rids(rid) = val + 1
+            retval = True
+        else:
+            retval = False
+
+        self.lock.release()
+        
+        return retval
+
+    def lockWriteRange(self, range):
+        self.lock.acquire()
+
+        val = self.lock_manager_range.get(range)
+
+        if val is None:
+            self.lock_manager_range(range) = 0
+            val = 0
+        else:
+
+        if val == 0:
+            self.lock_manager_range(rid) = val - 1
+            retval = True
+        else:
+            retval = False
+
+        self.lock.release()
+        
+        return retval
+
+    def unlockWriteRange(self, range):
+        self.lock.acquire()
+
+        val = self.lock_manager_range.get(range)
+
+        if val is None:
+            self.lock_manager_range(range) = 0
+            val = 0
+        else:
+
+        if val == -1:
+            self.lock_manager_range(rid) = val + 1
+            retval = True
+        else:
+            retval = False
+
+        self.lock.release()
+        
+        return retval
 
     # Future function to merge tail records into base records
     def merge(self, pageR):
