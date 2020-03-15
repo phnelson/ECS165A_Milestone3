@@ -386,6 +386,10 @@ class Table:
 
         self.index.insertPair(self.key, columns[self.key], base_rid)
 
+        # Redundant to make sure we always have a current working page range
+        if self.buffer_pool_range.hasCapacityBase_Pool(self.curr_page_range) == False:
+            self.newPageRange()
+
         return base_rid
 
     def updateRecord(self, rid, columns):
