@@ -15,6 +15,15 @@ class Query:
     # Read a record with specified RID
     """
 
+    def getDeleteRid(self, key):
+        rid = self.table.index.locate(self.table.key, key)[0]
+        return rid
+
+    def getDeletePageRange(self, key):
+        rid = self.table.index.locate(self.table.key, key)[0]
+        pageR = self.table.getPageR(rid)
+        return pageR
+
     def delete(self, key):
         # print("Deleting key:", key)
         # rid = self.table.page_directory.get(key)
@@ -28,6 +37,9 @@ class Query:
     """
     # Insert a record with specified columns
     """
+    def getInsertPageRange(self, *columns):
+        pageR = self.table.curr_page_range
+        return pageR
 
     def insert(self, *columns):
         key = columns[self.table.key]
@@ -40,19 +52,15 @@ class Query:
     """
     # Read a record with specified key
     """
-    '''Outdated select function
-    def select(self, key, query_columns):
-        retList = []
-        rid = self.table.page_directory.get(key)
-        # Validator for record presence in table
-        if rid is None:
-            retList.append(None)
-            return retList
-        # Go into memory and read the value stored at rid or its indirection
-        record = self.table.readRecord(rid)
-        retList.append(record)
-        return retList
-    '''
+   
+    def getSelectFullRids(self, key, column):
+        rids = self.table.index.locate(column, key)
+        if rids is None:
+            return [None]
+        else:
+            pass
+        return rids
+
     def selectFull(self, key, column):
         retList = []
         # print("test", key)
@@ -74,6 +82,14 @@ class Query:
                 retList.append(record)
 
         return retList
+
+    def getSelectRids(self, key, column, query_columns):
+        rids = self.table.index.locate(column, key)
+        if rids is None:
+            return [None]
+        else:
+            pass
+        return rids
 
     def select(self, key, column, query_columns):
         retList = []
@@ -115,6 +131,14 @@ class Query:
     """
     # Update a record with specified key and columns
     """
+    def getUpdateRid(self, key, *columns):
+        rid = self.table.index.indices[self.table.key][key][0]
+        return rid
+
+    def getUpdatePageRange(self, key, *columns):
+        rid = self.table.index.indices[self.table.key][key][0]
+        pageR = self.table.getPageR(rid)
+        return pageR
 
     def update(self, key, *columns):
         # rid = self.table.page_directory.get(key)
@@ -127,6 +151,14 @@ class Query:
     :param end_range: int           # End of the key range to aggregate 
     :param aggregate_columns: int  # Index of desired column to aggregate
     """
+
+    def getSumRids(self, start_range, end_range, aggregate_column_index):
+        rids = []
+        for x in range(start_range, end_range):
+            rids.append(x)
+
+        return rids
+
 
     def sum(self, start_range, end_range, aggregate_column_index):
         sum_val = 0
@@ -161,3 +193,25 @@ class Query:
 
 
         return sum_val
+
+        
+    """
+    incremenets one column of the record
+    this implementation should work if your select and update queries already work
+    :param key: the primary of key of the record to increment
+    :param column: the column to increment
+    # Returns True is increment is successful
+    # Returns False if no record matches key or if target record is locked by 2PL.
+    """
+    def getIncrementRids(self, key, column):
+        rid = self.getSelectRids(key, self.table.key, [1] * self.table.num_columns)[0]
+        return rid
+
+    def increment(self, key, column):
+        r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
+        if r is not False:
+            updated_columns = [None] * self.table.num_columns
+            updated_columns[column] = r[column] + 1
+            u = self.update(key, *updated_columns)
+            return u
+        return False
