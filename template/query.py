@@ -29,10 +29,12 @@ class Query:
         # rid = self.table.page_directory.get(key)
         rid = self.table.index.locate(self.table.key, key)[0]
         # Go into memory with the rid -> (PageRange, offset), change value of Record.rid to None
-        self.table.deleteRecord(rid)
+        retval = self.table.deleteRecord(rid)
         # Remove key from dictionary ,dict.pop(key) might be useful
         # self.table.page_directory.pop(key, None)
         self.table.index.deletePair(self.table.key, key, rid)
+
+        return retval
 
     """
     # Insert a record with specified columns
@@ -48,6 +50,8 @@ class Query:
         # print("Insert: rid = ", rid)
         # Add key,rid pair to dictionary
         # self.table.page_directory[key] = rid
+
+        return True
 
     """
     # Read a record with specified key
@@ -144,7 +148,8 @@ class Query:
         # rid = self.table.page_directory.get(key)
         rid = self.table.index.indices[self.table.key][key][0]
         #print("update test, rid:", rid)
-        self.table.updateRecord(rid, columns)
+        retval = self.table.updateRecord(rid, columns)
+        return retval
 
     """
     :param start_range: int         # Start of the key range to aggregate 
@@ -194,7 +199,6 @@ class Query:
 
         return sum_val
 
-        
     """
     incremenets one column of the record
     this implementation should work if your select and update queries already work
