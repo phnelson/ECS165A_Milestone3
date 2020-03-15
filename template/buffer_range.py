@@ -35,6 +35,9 @@ class BufferRange:
     def setDirty(self):
         self.dirty = 1
 
+    def setNotDirty(self):
+        self.dirty = 0
+
     def getPin(self):
         return self.pin
 
@@ -196,6 +199,22 @@ class BufferPoolRange:
         if index is None:
             index = self.loadRange(pageR)
         return index
+
+    def setRangeDirty(self, pageR):
+        index = self.buffer_dic.get(pageR)
+        if index is None:
+            print("Error, pageR to be set to dirty not found in bufferpool")
+            return False
+        self.buffer_ranges[index].setDirty
+        return True
+
+    def setRangeNotDirty(self, pageR):
+        index = self.buffer_dic.get(pageR)
+        if index is None:
+            print("Error, pageR to be set to dirty not found in bufferpool")
+            return False
+        self.buffer_ranges[index].setNotDirty
+        return True
 
     def loadMerge(self, pageR):
         index = self.getRange(pageR)
