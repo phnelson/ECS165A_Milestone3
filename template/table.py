@@ -59,12 +59,13 @@ class Table:
         val = self.lock_manager_rids.get(rid)
 
         if val is None:
-            self.lock_manager_rids(rid) = 0
+            self.lock_manager_rids[rid] = 0
             val = 0
         else:
+            pass
 
         if val >= 0:
-            self.lock_manager_rids(rid) = val + 1
+            self.lock_manager_rids[rid] = val + 1
             retval = True
         else:
             retval = False
@@ -79,12 +80,13 @@ class Table:
         val = self.lock_manager_rids.get(rid)
 
         if val is None:
-            self.lock_manager_rids(rid) = 0
+            self.lock_manager_rids[rid] = 0
             val = 0
         else:
+            pass
 
         if val > 0:
-            self.lock_manager_rids(rid) = val - 1
+            self.lock_manager_rids[rid] = val - 1
             retval = True
         else:
             retval = False
@@ -99,12 +101,13 @@ class Table:
         val = self.lock_manager_rids.get(rid)
 
         if val is None:
-            self.lock_manager_rids(rid) = 0
+            self.lock_manager_rids[rid] = 0
             val = 0
         else:
+            pass
 
-        if val = 0:
-            self.lock_manager_rids(rid) = val - 1
+        if val == 0:
+            self.lock_manager_rids[rid] = val - 1
             retval = True
         else:
             retval = False
@@ -119,12 +122,13 @@ class Table:
         val = self.lock_manager_rids.get(rid)
 
         if val is None:
-            self.lock_manager_rids(rid) = 0
+            self.lock_manager_rids[rid] = 0
             val = 0
         else:
+            pass
 
         if val == -1:
-            self.lock_manager_rids(rid) = val + 1
+            self.lock_manager_rids[rid] = val + 1
             retval = True
         else:
             retval = False
@@ -133,18 +137,19 @@ class Table:
         
         return retval
 
-    def lockWriteRange(self, range):
+    def lockWriteRange(self, pageR):
         self.lock.acquire()
 
-        val = self.lock_manager_range.get(range)
+        val = self.lock_manager_pageRanges.get(pageR)
 
         if val is None:
-            self.lock_manager_range(range) = 0
+            self.lock_manager_pageRanges[pageR] = 0
             val = 0
         else:
+            pass
 
         if val == 0:
-            self.lock_manager_range(rid) = val - 1
+            self.lock_manager_pageRanges[pageR] = val - 1
             retval = True
         else:
             retval = False
@@ -153,18 +158,19 @@ class Table:
         
         return retval
 
-    def unlockWriteRange(self, range):
+    def unlockWriteRange(self, pageR):
         self.lock.acquire()
 
-        val = self.lock_manager_range.get(range)
+        val = self.lock_manager_pageRanges.get(pageR)
 
         if val is None:
-            self.lock_manager_range(range) = 0
+            self.lock_manager_pageRanges[pageR] = 0
             val = 0
         else:
+            pass
 
         if val == -1:
-            self.lock_manager_range(rid) = val + 1
+            self.lock_manager_pageRanges[pageR] = val + 1
             retval = True
         else:
             retval = False
