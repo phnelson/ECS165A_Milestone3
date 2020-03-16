@@ -25,7 +25,7 @@ class Transaction:
 
     def preProcess(self):
 
-        print(self.queries[0])
+        #print(self.queries[0])
         #self.table = self.queries[0].table
 
         for query, args in self.queries:
@@ -57,6 +57,7 @@ class Transaction:
                         # add rid to collected locks
                         self.rids.append(rid)
                     else:
+                        #print("Failed to acquire rid lock, aborting!")
                         return False    
                 else:
                     pass
@@ -72,9 +73,13 @@ class Transaction:
                         # load range into bufferpool here
                         load_success = self.query.table.buffer_pool_range.preloadRange(pageR)
                         if load_success is False:
+                            #print("failed to load range, aborting!")
                             return False
                         else:
-                            pass 
+                            pass
+                    else:
+                        #print("Failed to acquire range lock, aborting!")
+                        return False
                 else:
                     pass
 

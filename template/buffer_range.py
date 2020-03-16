@@ -262,19 +262,26 @@ class BufferPoolRange:
         return index
 
     def setRangeDirty(self, pageR):
+        self.lock.acquire()
+
         index = self.buffer_dic.get(pageR)
         if index is None:
             print("Error, pageR to be set to dirty not found in bufferpool")
+            self.lock.release()
             return False
-        self.buffer_ranges[index].setDirty
+        self.buffer_ranges[index].setDirty()
+        self.lock.release()
         return True
 
     def setRangeNotDirty(self, pageR):
+        self.lock.acquire()
         index = self.buffer_dic.get(pageR)
         if index is None:
             print("Error, pageR to be set to dirty not found in bufferpool")
+            self.lock.release()
             return False
-        self.buffer_ranges[index].setNotDirty
+        self.buffer_ranges[index].setNotDirty()
+        self.lock.release()
         return True
 
     def directFlushRange(self, pageR):

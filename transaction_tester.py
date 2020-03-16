@@ -12,7 +12,7 @@ grades_table = db.create_table('Grades', 5, 0)
 
 keys = []
 records = {}
-num_threads = 1
+num_threads = 8
 seed(8739878934)
 
 # Generate random records
@@ -27,8 +27,6 @@ for i in range(0, 10000):
 transaction_workers = []
 for i in range(num_threads):
     transaction_workers.append(TransactionWorker([]))
-
-print("Checkpoint")
 
 # generates 10k random transactions
 # each transaction will increment the first column of a record 5 times
