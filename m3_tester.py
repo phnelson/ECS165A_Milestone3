@@ -35,7 +35,7 @@ for i in range(10000):
     key = random.choice(keys)
     record = records[key]
     c = record[1]
-    transaction = Transaction()
+    transaction = Transaction(q)
     for i in range(5):
         c += 1
         q = Query(grades_table)
