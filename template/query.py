@@ -18,28 +18,31 @@ class Query:
     def getRids(self, query, *args):
         # if this doesnt work, try id(self.delete)
         retval = False
+        q_func = query.__func__
 
-        if query == self.delete:
+        print(args)
+
+        if q_func == self.delete.__func__:
             rids = self.getDeleteRid(args)
             retval = True
 
-        if query == self.selectFull:
+        if q_func == self.selectFull.__func__:
             rids = self.getSelectFullRids(args[0], args[1])
             retval = True
 
-        if query == self.select:
+        if q_func == self.select.__func__:
             rids = self.getSelectRids(args[0], args[1], args[2])
             retval = True
 
-        if query == self.update:
+        if q_func == self.update.__func__:
             rids = self.getUpdateRid(args)
             retval = True
 
-        if query == self.sum:
+        if q_func == self.sum.__func__:
             rids = self.getSumRids(args[0], args[1], args[2])
             retval = True
 
-        if query == self.increment:
+        if q_func == self.increment.__func__:
             rids = self.getIncrementRids(args[0], args[1])
             retval = True
 
@@ -52,22 +55,22 @@ class Query:
         
 
     def getPageRanges(self, query, *args):
-
         retval = False
+        q_func = query.__func__
 
-        if query == self.delete:
+        if q_func == self.delete.__func__:
             pageR = self.getDeletePageRange(args)
             retval = True
 
-        if query == self.insert:
+        if q_func == self.insert.__func__:
             pageR = self.getInsertPageRange(args)
             retval = True
 
-        if query == self.update:
+        if q_func == self.update.__func__:
             pageR = self.getUpdatePageRange(args)
             retval = True
 
-        if query == self.increment:
+        if q_func == self.increment.__func__:
             pageR = self.getIncrementPageRange(args[0], args[1])
             retval = True
 

@@ -12,7 +12,7 @@ grades_table = db.create_table('Grades', 5, 0)
 
 keys = []
 records = {}
-num_threads = 8
+num_threads = 1
 seed(8739878934)
 
 # Generate random records
@@ -34,7 +34,7 @@ print("Checkpoint")
 # each transaction will increment the first column of a record 5 times
 for i in range(1000):
     k = randint(0, 2000 - 1)
-    transaction = Transaction()
+    transaction = Transaction(q)
     for j in range(5):
         key = keys[k * 5 + j]
         q = Query(grades_table)

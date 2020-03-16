@@ -6,11 +6,11 @@ class Transaction:
     """
     # Creates a transaction object.
     """
-    def __init__(self):
+    def __init__(self, query):
         self.queries = []
         self.rids = []
         self.ranges = []
-        self.table = None
+        self.query = query
         pass
 
     """
@@ -26,7 +26,7 @@ class Transaction:
     def preProcess(self):
 
         print(self.queries[0])
-        self.table = self.queries[0].table
+        #self.table = self.queries[0].table
 
         for query, args in self.queries:
             # get required rids
@@ -36,14 +36,17 @@ class Transaction:
             ranges = self.table.getRanges(query, *args)
             '''
 
-            rids = query.getRids(query, args)
-            ranges = query.getPageRanges(query, args)
+            rids = self.query.getRids(query, args)
+            ranges = self.query.getPageRanges(query, args)
 
             # add rids that do not already exist in self.rids to self.rids
+            if not rids and not ranges:
+                return False
+                
             for rid in rids:
                 if rid not in self.rids:\
                     # acquire lock here
-                    lock_success = self.table.lockWriteRid(rid)
+                    lock_success = self.query.table.lockWriteRid(rid)
                     if lock_success is True:
                         # add rid to collected locks
                         self.rids.append(rid)
@@ -56,12 +59,12 @@ class Transaction:
             for pageR in ranges:
                 if pageR not in self.ranges:
                     # acquire lock here
-                    lock_success = self.table.lockWriteRange(pageR)
+                    lock_success = self.query.table.lockWriteRange(pageR)
                     if lock_success is True:
                         # add pageR to collected locks
                         self.ranges.append(pageR)
                         # load range into bufferpool here
-                        load_success = self.table.buffer_pool_range.preloadRange(pageR)
+                        load_success = self.query.table.buffer_pool_range.preloadRange(pageR)
                         if load_success is False:
                             return False
                         else:
@@ -93,7 +96,7 @@ class Transaction:
 
         # set all dirty bits in ranges to 0
         for pageR in self.ranges:
-            val = self.table.buffer_pool_range.setRangeNotDirty(pageR)
+            val = self.query.table.buffer_pool_range.setRangeNotDirty(pageR)
             if val is not True:
                 pass
             else:
@@ -101,11 +104,11 @@ class Transaction:
 
         # evict all ranges
         for pageR in self.ranges:
-            val = self.table.buffer_pool_range.directFlushRange(pageR)
+            val = self.query.table.buffer_pool_range.directFlushRange(pageR)
 
         # unlock required rids
         for rid in self.rids:
-            lock_success = self.table.unlockWriteRid(rid)
+            lock_success = self.query.table.unlockWriteRid(rid)
             if lock_success is False:
                 pass
             else:
@@ -113,7 +116,7 @@ class Transaction:
 
         # unlock required ranges
         for pageR in self.ranges:
-            lock_success = self.table.unlockWriteRange(pageR)
+            lock_success = self.query.table.unlockWriteRange(pageR)
             if lock_success is False:
                 pass
             else:
@@ -126,7 +129,7 @@ class Transaction:
 
         # set all dirty bits in ranges to 1
         for pageR in self.ranges:
-            val = self.table.buffer_pool_range.setRangeDirty(pageR)
+            val = self.query.table.buffer_pool_range.setRangeDirty(pageR)
             if val is not True:
                 pass
             else:
@@ -134,11 +137,11 @@ class Transaction:
 
         # evict all ranges
         for pageR in self.ranges:
-            val = self.table.buffer_pool_range.directFlushRange(pageR)
+            val = self.query.table.buffer_pool_range.directFlushRange(pageR)
 
         # unlock required rids
         for rid in self.rids:
-            lock_success = self.table.unlockWriteRid(rid)
+            lock_success = self.query.table.unlockWriteRid(rid)
             if lock_success is False:
                 pass
             else:
@@ -146,7 +149,7 @@ class Transaction:
 
         # unlock required ranges
         for pageR in self.ranges:
-            lock_success = self.table.unlockWriteRange(pageR)
+            lock_success = self.query.table.unlockWriteRange(pageR)
             if lock_success is False:
                 pass
             else:
