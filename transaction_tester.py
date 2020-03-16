@@ -28,6 +28,8 @@ transaction_workers = []
 for i in range(num_threads):
     transaction_workers.append(TransactionWorker([]))
 
+print("Checkpoint")
+
 # generates 10k random transactions
 # each transaction will increment the first column of a record 5 times
 for i in range(1000):

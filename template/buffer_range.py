@@ -209,6 +209,35 @@ class BufferPoolRange:
         return index
 
     def preloadRange(self, pageR):
+        self.lock.acquire()
+        dirty = False
+        retval = False
+
+        for i in self.buffer_ranges:
+            if self.buffer_ranges[i].canEvict():
+                self.evictRange(i)
+                
+                curr_range = None
+                if path.exists(self.pageRToFileName(pageR)):
+                    #with open(self.pageRToFileName(pageR), 'rb') as input:
+                    with open('%d.prange' % pageR, 'rb') as input:
+                        curr_range = pickle.load(input)
+                else:
+                    curr_range = PageRange(self.num_columns)
+                    dirty = True
+
+                self.buffer_ranges[i].setPageR(pageR)
+                self.buffer_ranges[i].setRange(curr_range)
+                self.buffer_ranges[i].incPin()
+                if dirty:
+                    self.buffer_ranges[i].setDirty()
+                self.buffer_dic[pageR] = i
+                retval = True
+            else:
+                pass
+
+        self.lock.release()
+        return retval
 
     def getRange(self, pageR):
         self.lock.acquire()
@@ -246,7 +275,7 @@ class BufferPoolRange:
             print("Error, pageR to be evicted not found in bufferpool")
             return False
         retval = self.flushRange(index)
-        self.buffer_ranges.unpin()
+        self.buffer_ranges[index].unpin()
 
         self.lock.release()
         return retval

@@ -25,13 +25,19 @@ class Transaction:
 
     def preProcess(self):
 
+        print(self.queries[0])
         self.table = self.queries[0].table
 
         for query, args in self.queries:
             # get required rids
             # get required ranges
+            '''
             rids = self.table.getRids(query, *args)
             ranges = self.table.getRanges(query, *args)
+            '''
+
+            rids = query.getRids(query, args)
+            ranges = query.getPageRanges(query, args)
 
             # add rids that do not already exist in self.rids to self.rids
             for rid in rids:

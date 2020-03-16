@@ -15,6 +15,70 @@ class Query:
     # Read a record with specified RID
     """
 
+    def getRids(self, query, *args):
+        # if this doesnt work, try id(self.delete)
+        retval = False
+
+        if query == self.delete:
+            rids = self.getDeleteRid(args)
+            retval = True
+
+        if query == self.selectFull:
+            rids = self.getSelectFullRids(args[0], args[1])
+            retval = True
+
+        if query == self.select:
+            rids = self.getSelectRids(args[0], args[1], args[2])
+            retval = True
+
+        if query == self.update:
+            rids = self.getUpdateRid(args)
+            retval = True
+
+        if query == self.sum:
+            rids = self.getSumRids(args[0], args[1], args[2])
+            retval = True
+
+        if query == self.increment:
+            rids = self.getIncrementRids(args[0], args[1])
+            retval = True
+
+        if retval is False:
+            return False
+        else:
+            pass
+
+        return rids
+        
+
+    def getPageRanges(self, query, *args):
+
+        retval = False
+
+        if query == self.delete:
+            pageR = self.getDeletePageRange(args)
+            retval = True
+
+        if query == self.insert:
+            pageR = self.getInsertPageRange(args)
+            retval = True
+
+        if query == self.update:
+            pageR = self.getUpdatePageRange(args)
+            retval = True
+
+        if query == self.increment:
+            pageR = self.getIncrementPageRange(args[0], args[1])
+            retval = True
+
+        if retval is False:
+            return False
+        else:
+            pass
+
+        return pageR
+
+
     def getDeleteRid(self, key):
         rid = self.table.index.locate(self.table.key, key)[0]
         return rid
@@ -210,6 +274,11 @@ class Query:
     def getIncrementRids(self, key, column):
         rid = self.getSelectRids(key, self.table.key, [1] * self.table.num_columns)[0]
         return rid
+
+    def getIncrementPageRange(self, key, column):
+        rid = self.getSelectRids(key, self.table.key, [1] * self.table.num_columns)[0]
+        pageR = self.table.getPageR(rid)
+        return pageR
 
     def increment(self, key, column):
         r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
