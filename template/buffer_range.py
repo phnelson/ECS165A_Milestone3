@@ -4,12 +4,14 @@ from template.page import *
 import pickle
 import copy
 import os.path
+import threading
 class BufferRange:
 
     def __init__(self):
         self.pageR = None
         self.dirty = 0
         self.pin = 0
+        self.write_lock = 0
         self.range_data = None # THIS IS A PAGERANGE CLASS
 
     def requestWrite(self):
@@ -111,6 +113,8 @@ class BufferPoolRange:
         self.buffer_size = buffer_size
         self.buffer_dic = {}
         self.buffer_ranges = [] # range from [0:buffer_size]
+        self.empty_ranges = []
+        self.lock = threading.Lock()
 
         for i in range(0, buffer_size):
             self.buffer_ranges.append(BufferRange())
@@ -166,6 +170,16 @@ class BufferPoolRange:
         curr_range.delete()
         return index
 
+    def flushRange(self, index):
+        curr_range = self.buffer_ranges[index]
+
+        if curr_range.writeBack():
+            f = open('%d.prange' % curr_range.getPageR(), 'wb')
+            pickle.dump(curr_range.getRange(), f, pickle.HIGHEST_PROTOCOL)
+
+        self.buffer_ranges[index].setNotDirty()
+        return True
+
     def loadRange(self, pageR):
         #print("Range Loader")
         dirty = False
@@ -194,10 +208,18 @@ class BufferPoolRange:
         #print(self.buffer_dic)
         return index
 
+    def preloadRange(self, pageR):
+
     def getRange(self, pageR):
+        self.lock.acquire()
+
         index = self.buffer_dic.get(pageR)
         if index is None:
             index = self.loadRange(pageR)
+
+        self.buffer_ranges[index].incPin()
+
+        self.lock.release()
         return index
 
     def setRangeDirty(self, pageR):
@@ -216,9 +238,21 @@ class BufferPoolRange:
         self.buffer_ranges[index].setNotDirty
         return True
 
+    def directFlush(self, pageR):
+        self.lock.acquire()
+
+        index = self.buffer_dic.get(pageR)
+        if index is None:
+            print("Error, pageR to be evicted not found in bufferpool")
+            return False
+        retval = self.flushRange(index)
+        self.buffer_ranges.unpin()
+
+        self.lock.release()
+        return retval
+
     def loadMerge(self, pageR):
         index = self.getRange(pageR)
-        self.buffer_ranges[index].incPin()
         deep_copy = copy.deepcopy(self.buffer_ranges[index].range_data)
         self.buffer_ranges[index].unpin()
         return deep_copy
@@ -260,36 +294,42 @@ class BufferPoolRange:
     def hasCapacityBase_Pool(self, pageR):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].hasCapacityBase_Range()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
     def hasCapacityTail_Pool(self, pageR):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].hasCapacityTail_Range()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
     def getIndirection_Pool(self, pageR, page_block, offset):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].getIndirection_Range(page_block, offset)
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
     def nextBaseRid_Pool(self, pageR):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].nextBaseRid_Range()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
     def nextTailRid_Pool(self, pageR):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].nextTailRid_Range()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
     def readBlock_Pool(self, pageR, page_block, offset):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].readBlock_Range(page_block, offset)
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
@@ -297,6 +337,7 @@ class BufferPoolRange:
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].writeBaseBlock_Range(columns)
         self.buffer_ranges[index].setDirty()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
@@ -304,6 +345,7 @@ class BufferPoolRange:
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].writeTailBlock_Range(columns)
         self.buffer_ranges[index].setDirty()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
@@ -311,11 +353,13 @@ class BufferPoolRange:
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].editBlock_Range(page_block, arg_index, offset, value)
         self.buffer_ranges[index].setDirty()
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value
 
     def deleteRecord_Pool(self, pageR, page_block, offset):
         index = self.getRange(pageR)
         ret_value = self.buffer_ranges[index].deleteRecord_Range(page_block, offset)
+        self.buffer_ranges[index].unpin()
         self.MRU = index
         return ret_value

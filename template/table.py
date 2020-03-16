@@ -243,6 +243,7 @@ class Table:
 
     def close(self):
         self.buffer_pool_range.evictAll()
+        self.buffer_pool_range.lock = None
 
     def getName(self):
         return self.name

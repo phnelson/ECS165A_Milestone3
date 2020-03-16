@@ -30,6 +30,7 @@ class Database():
 
                     for i in range(0, len(self.tables)):
                         self.tables[i].lock = threading.Lock()
+                        self.tables[i].buffer_pool_range.lock = threading.Lock()
                     
             else:
                 pass
