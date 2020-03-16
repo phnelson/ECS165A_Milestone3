@@ -213,26 +213,36 @@ class BufferPoolRange:
         dirty = False
         retval = False
 
-        for i in range(self.buffer_size):
-            if self.buffer_ranges[i].canEvict():
-                self.evictRange(i)
-                
-                curr_range = None
-                if path.exists(self.pageRToFileName(pageR)):
-                    #with open(self.pageRToFileName(pageR), 'rb') as input:
-                    with open('%d.prange' % pageR, 'rb') as input:
-                        curr_range = pickle.load(input)
-                else:
-                    curr_range = PageRange(self.num_columns)
-                    dirty = True
+        index = self.buffer_dic.get(pageR)
+        if index is not None:
+            self.buffer_ranges[index].incPin()
+            self.lock.release()
+            return True
 
-                self.buffer_ranges[i].setPageR(pageR)
-                self.buffer_ranges[i].setRange(curr_range)
-                self.buffer_ranges[i].incPin()
-                if dirty:
-                    self.buffer_ranges[i].setDirty()
-                self.buffer_dic[pageR] = i
-                retval = True
+        for i in range(self.buffer_size):
+            if retval is False:
+
+                if self.buffer_ranges[i].canEvict():
+                    self.evictRange(i)
+                
+                    curr_range = None
+                    if path.exists(self.pageRToFileName(pageR)):
+                        #with open(self.pageRToFileName(pageR), 'rb') as input:
+                        with open('%d.prange' % pageR, 'rb') as input:
+                            curr_range = pickle.load(input)
+                    else:
+                        curr_range = PageRange(self.num_columns)
+                        dirty = True
+
+                    self.buffer_ranges[i].setPageR(pageR)
+                    self.buffer_ranges[i].setRange(curr_range)
+                    self.buffer_ranges[i].incPin()
+                    if dirty:
+                        self.buffer_ranges[i].setDirty()
+                    self.buffer_dic[pageR] = i
+                    retval = True
+                else:
+                    pass
             else:
                 pass
 

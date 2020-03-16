@@ -32,7 +32,7 @@ print("Checkpoint")
 
 # generates 10k random transactions
 # each transaction will increment the first column of a record 5 times
-for i in range(1000):
+for i in range(10000):
     k = randint(0, 2000 - 1)
     transaction = Transaction(q)
     for j in range(5):

@@ -194,7 +194,7 @@ class Query:
         retList = []
         # print("test", key)
         rids = self.table.index.locate(column, key)
-        # print("rids", rids)
+        #print("rids", rids)
 
         # Validator for record presence in table
         if rids is None:
