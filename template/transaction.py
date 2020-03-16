@@ -31,18 +31,24 @@ class Transaction:
         for query, args in self.queries:
             # get required rids
             # get required ranges
-            '''
-            rids = self.table.getRids(query, *args)
-            ranges = self.table.getRanges(query, *args)
-            '''
+            
+            rids = self.query.getRids(query, args) # a list
+            ranges = self.query.getPageRanges(query, args) # a list
 
-            rids = self.query.getRids(query, args)
-            ranges = self.query.getPageRanges(query, args)
+            #print("rids, ranges:", rids, ranges)
 
             # add rids that do not already exist in self.rids to self.rids
-            if not rids and not ranges:
+            if rids is False:
+                #print("tripped by False checker")
                 return False
-                
+
+            if ranges is False:
+                #print("tripped by False checker")
+                return False
+
+
+            #print("passed False checker")
+
             for rid in rids:
                 if rid not in self.rids:\
                     # acquire lock here
@@ -154,6 +160,8 @@ class Transaction:
                 pass
             else:
                 pass
+
+        print("transaction completed successfully!")
 
         return True
 

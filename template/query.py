@@ -20,37 +20,46 @@ class Query:
         retval = False
         q_func = query.__func__
 
-        print(args)
+        #print("These are the args", args)
 
         if q_func == self.delete.__func__:
             rids = self.getDeleteRid(args)
             retval = True
 
+        if q_func == self.insert.__func__:
+            rids = None
+            retval = True
+
         if q_func == self.selectFull.__func__:
-            rids = self.getSelectFullRids(args[0], args[1])
+            rids = self.getSelectFullRids(args[0][0], args[0][1])
             retval = True
 
         if q_func == self.select.__func__:
-            rids = self.getSelectRids(args[0], args[1], args[2])
+            rid = self.getSelectRids(args[0][0], args[0][1], args[0][2])[0]
+            rids = []
+            rids.append(rid)
             retval = True
 
         if q_func == self.update.__func__:
-            rids = self.getUpdateRid(args)
+            rids = self.getUpdateRid(args[0])
             retval = True
 
         if q_func == self.sum.__func__:
-            rids = self.getSumRids(args[0], args[1], args[2])
+            rids = self.getSumRids(args[0][0], args[0][1], args[0][2])
             retval = True
 
         if q_func == self.increment.__func__:
-            rids = self.getIncrementRids(args[0], args[1])
+            rid = self.getIncrementRids(args[0][0], args[0][1])
+            rids = []
+            rids.append(rid)
             retval = True
 
         if retval is False:
             return False
         else:
             pass
-
+        
+        # print("Rids:", rids)
         return rids
         
 
@@ -58,20 +67,39 @@ class Query:
         retval = False
         q_func = query.__func__
 
+        #print("getPageRanges, q_func:", q_func)
+
         if q_func == self.delete.__func__:
-            pageR = self.getDeletePageRange(args)
+            pageR = self.getDeletePageRange(args[0])
             retval = True
 
         if q_func == self.insert.__func__:
-            pageR = self.getInsertPageRange(args)
+            pageR = self.getInsertPageRange(args[0])
+            #print("inside insert function match, pageR:", pageR)
+            retval = True
+
+        if q_func == self.selectFull.__func__:
+            pageR = None # new
+            retval = True
+
+        if q_func == self.select.__func__:
+            pageR = [] # new
             retval = True
 
         if q_func == self.update.__func__:
-            pageR = self.getUpdatePageRange(args)
+            pageR = self.getUpdatePageRange(args[0])
+            retval = True
+
+        if q_func == self.sum.__func__:
+            pageR = None # new
             retval = True
 
         if q_func == self.increment.__func__:
-            pageR = self.getIncrementPageRange(args[0], args[1])
+            page_R = self.getIncrementPageRange(args[0][0], args[0][1])
+            pageR = []
+            pageR.append(page_R)
+
+            #print("inside increment function match")
             retval = True
 
         if retval is False:
@@ -286,8 +314,9 @@ class Query:
     def increment(self, key, column):
         r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
         if r is not False:
+            r_cols = r.getColumns()
             updated_columns = [None] * self.table.num_columns
-            updated_columns[column] = r[column] + 1
+            updated_columns[column] = r_cols[column] + 1
             u = self.update(key, *updated_columns)
             return u
         return False

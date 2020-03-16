@@ -213,7 +213,7 @@ class BufferPoolRange:
         dirty = False
         retval = False
 
-        for i in self.buffer_ranges:
+        for i in range(self.buffer_size):
             if self.buffer_ranges[i].canEvict():
                 self.evictRange(i)
                 
@@ -267,7 +267,7 @@ class BufferPoolRange:
         self.buffer_ranges[index].setNotDirty
         return True
 
-    def directFlush(self, pageR):
+    def directFlushRange(self, pageR):
         self.lock.acquire()
 
         index = self.buffer_dic.get(pageR)
